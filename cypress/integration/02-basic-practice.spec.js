@@ -6,7 +6,10 @@ describe('Basic Practice', () => {
   });
 
   describe('Adding a new item', () => {
-    it('should put a new item on the page after clicking on "Add Item"', () => {});
+    it('should put a new item on the page after clicking on "Add Item"', () => {
+      cy.get('[data-test="new-item-input"]').type('new item')
+      cy.get('[data-test="add-item"]').click()
+    });
 
     it('should put a new item in the "Unpacked Items" list', () => {});
 
