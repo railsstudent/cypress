@@ -77,7 +77,7 @@ describe('Pokémon Search', () => {
     cy.get('[data-test="results"] a').first().click()
     cy.wait('@individual-api')
 
-    cy.location('pathname').should('contain',   '/pokemon-search/1')
+    cy.location('pathname').should('contain', '/pokemon-search/1')
   });
 
   it('should immediately fetch a pokémon if a query parameter is provided', () => {
