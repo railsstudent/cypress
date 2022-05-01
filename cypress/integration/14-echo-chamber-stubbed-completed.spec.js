@@ -60,18 +60,48 @@ describe('Signing in with a seeded database', () => {
       });
     });
 
-    it('should navigate to the URL of the post that you clicked on', () => {});
+    it('should navigate to the URL of the post that you clicked on', () => {
+      cy.get('@previews').first().click()
+      cy.wait('@postApi').then(interception => {
+        cy.location('pathname').should('contain', `/echo-chamber/posts/${interception.response.body.post.id}`)
+      }) 
+    });
 
-    it('should send a POST request when submitting the form', () => {});
+    it('should send a POST request when submitting the form', () => {
+      cy.get('@newPostInput').type('new post')
+      cy.get('@newPostSubmit').click()
+      cy.wait('@createPostApi').then(interception => {
+        expect(interception.response.url).to.contain('http://localhost:3000/echo-chamber/api')
+        expect(interception.request.body).to.contain('new post')
+      })
+    });
 
     describe('An individual post', () => {
-      beforeEach(() => {});
+      beforeEach(() => {
+        cy.setCookie('jwt', encodeToken({ id: 1, email: 'first@example.com' }));
+        cy.getData('post-preview-list').find('article').as('previews');
+        cy.get('@previews').first().click()
 
-      it('should show an edit field when you click on the edit button', () => {});
+        cy.intercept('PATCH', /\/echo-chamber\/api\/\d+/, { fixture: 'post' }).as('patchPostApi');
+        cy.intercept('DELETE', /\/echo-chamber\/api\/\d+/, { statusCode: 200 }).as('deletePostApi');
+      });
 
-      it('should send a PATCH request when you send your edit', () => {});
+      it('should show an edit field when you click on the edit button', () => {
+        cy.get('[data-test="post-detail-controls-edit-button"]').click()
+        cy.get('[data-test="post-detail-draft-content"]')
+      });
 
-      it('should send a DELETE request when click on the delete button', () => {});
+      it('should send a PATCH request when you send your edit', () => {
+        cy.get('[data-test="post-detail-controls-edit-button"]').click()
+        cy.get('[data-test="post-detail-draft-content"]').type('updated')
+        cy.get('[data-test="post-detail-edit-submit"]').click()
+        cy.wait('@patchPostApi')
+      });
+
+      it('should send a DELETE request when click on the delete button', () => {   
+        cy.get('[data-test="post-detail-controls-delete-button"]').click()
+        cy.wait('@deletePostApi')
+      });
     });
   });
 });
